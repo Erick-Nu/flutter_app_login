@@ -6,6 +6,7 @@ class AuthTextField extends StatefulWidget {
   final IconData prefixIcon;
   final bool isPassword;
   final TextInputType keyboardType;
+  final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final bool enabled;
   final void Function(String)? onFieldSubmitted;
@@ -17,6 +18,7 @@ class AuthTextField extends StatefulWidget {
     required this.prefixIcon,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
+    this.textInputAction,
     this.validator,
     this.enabled = true,
     this.onFieldSubmitted,
@@ -35,6 +37,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
       controller: widget.controller,
       obscureText: widget.isPassword && _obscureText,
       keyboardType: widget.keyboardType,
+      textInputAction: widget.textInputAction,
       validator: widget.validator,
       enabled: widget.enabled,
       onFieldSubmitted: widget.onFieldSubmitted,

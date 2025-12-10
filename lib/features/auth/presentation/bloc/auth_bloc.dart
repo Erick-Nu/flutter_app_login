@@ -69,7 +69,59 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  // Implementar el resto de los handlers...
+  Future<void> _onSignUpRequested(
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Creando cuenta...'));
+    final result = await signUpUseCase(
+      SignUpParams(
+        email: event.email,
+        password: event.password,
+        fullName: event.fullName,
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (user) {
+        if (user.emailConfirmed) {
+          emit(AuthAuthenticated(user: user));
+        } else {
+          emit(AuthSignUpSuccess(
+            email: user.email,
+            requiresEmailConfirmation: true,
+          ));
+        }
+      },
+    );
+  }
+
+  Future<void> _onSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Cerrando sesión...'));
+    final result = await signOutUseCase(const NoParams());
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(const AuthUnauthenticated()),
+    );
+  }
+
+  Future<void> _onPasswordResetRequested(
+    AuthPasswordResetRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading(message: 'Enviando correo de recuperación...'));
+    final result = await sendPasswordResetUseCase(
+      SendPasswordResetParams(email: event.email),
+    );
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (_) => emit(AuthPasswordResetSent(email: event.email)),
+    );
+  }
 
   @override
   Future<void> close() {
