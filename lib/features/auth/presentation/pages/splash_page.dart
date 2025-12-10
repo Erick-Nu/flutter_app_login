@@ -23,9 +23,9 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorBgDark = const Color(0xFF0B1021);
-    final colorBgLight = const Color(0xFF13254B);
-    final accent = const Color(0xFF3BC8E7);
+    // Usamos exactamente los mismos colores que en las otras pantallas
+    final Color backgroundColor = const Color(0xFF0B1021); 
+    final Color accentColor = const Color(0xFF3BC8E7);
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -34,61 +34,92 @@ class _SplashPageState extends State<SplashPage> {
             MaterialPageRoute(builder: (_) => const HomePage()),
           );
         } else if (state is AuthUnauthenticated) {
+          // Usamos PageRouteBuilder para una transición suave si lo deseas, 
+          // o el MaterialPageRoute estándar. 
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const LoginPage()),
           );
         }
       },
       child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colorBgDark, colorBgLight],
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
+        backgroundColor: backgroundColor, // Mismo fondo que la cabecera del Login
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 1. HERO ANIMATION: Este widget "volará" a la posición del logo en el Login
+              Hero(
+                tag: 'auth_logo',
+                child: Container(
+                  width: 100, // Un poco más grande que en el Login para dar énfasis
+                  height: 100,
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [accent, accent.withOpacity(0.55)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: accentColor.withOpacity(0.1),
+                    border: Border.all(color: accentColor.withOpacity(0.3), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.35),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12),
+                        color: accentColor.withOpacity(0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.lock_outline, color: Colors.white, size: 36),
+                  child: Icon(Icons.lock_outline, color: accentColor, size: 48),
                 ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Secure Access',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
+              ),
+              const SizedBox(height: 32),
+              
+              // Textos con animación sutil de aparición (Opcional, pero recomendado)
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 800),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 20 * (1 - value)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    const Text(
+                      'Secure Access',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Validando credenciales...',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Preparando tu experiencia',
-                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              ),
+
+              const SizedBox(height: 48),
+              
+              // Loader pequeño y elegante
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: accentColor,
+                  strokeWidth: 2.5,
                 ),
-                const SizedBox(height: 24),
-                const CircularProgressIndicator(color: Colors.white),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -21,6 +21,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  // Mismos colores que en LoginPage para consistencia
+  final Color _headerColor = const Color(0xFF0B1021);
+  final Color _surfaceColor = const Color(0xFF151B2D);
+  final Color _accentColor = const Color(0xFF3BC8E7);
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -43,114 +48,153 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorBgDark = const Color(0xFF0B1021);
-    final colorBgLight = const Color(0xFF13254B);
-    final accent = const Color(0xFF3BC8E7);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [colorBgDark, colorBgLight],
-          ),
-        ),
-        child: SafeArea(
-          child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              if (state is AuthError) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message), backgroundColor: Colors.red.shade400),
-                );
-              } else if (state is AuthSignUpSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cuenta creada con éxito')),
-                );
-                if (!state.requiresEmailConfirmation) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const HomePage()),
-                    (route) => false,
-                  );
-                } else {
-                  Navigator.pop(context);
-                }
-              } else if (state is AuthAuthenticated) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const HomePage()),
-                  (route) => false,
-                );
-              }
-            },
-            builder: (context, state) {
-              return Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 540),
-                    child: DecoratedBox(
+      backgroundColor: _headerColor,
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red.shade400,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else if (state is AuthSignUpSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cuenta creada con éxito'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            if (!state.requiresEmailConfirmation) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HomePage()),
+                (route) => false,
+              );
+            } else {
+              Navigator.pop(context); // Volver al login
+            }
+          } else if (state is AuthAuthenticated) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+            );
+          }
+        },
+        builder: (context, state) {
+          return SingleChildScrollView(
+            child: SizedBox(
+              height: size.height,
+              child: Column(
+                children: [
+                  // 1. SECCIÓN DE CABECERA
+                  Expanded(
+                    flex: 3, // Un poco más pequeño que el login para dar espacio a más campos
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: SafeArea(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Botón de regresar
+                            Positioned(
+                              top: 16,
+                              left: 0,
+                              child: IconButton(
+                                onPressed: () => Navigator.pop(context),
+                                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                              ),
+                            ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Logo (Hero Animation)
+                                Hero(
+                                  tag: 'auth_logo',
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: _accentColor.withOpacity(0.1),
+                                      border: Border.all(color: _accentColor.withOpacity(0.3), width: 2),
+                                    ),
+                                    child: Icon(Icons.person_add_outlined, size: 32, color: _accentColor),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Crear Cuenta',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 2. SECCIÓN DEL FORMULARIO
+                  Expanded(
+                    flex: 7, // Más espacio para los 3 inputs
+                    child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white.withOpacity(0.08)),
+                        color: _surfaceColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.35),
-                            blurRadius: 24,
-                            offset: const Offset(0, 16),
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, -5),
                           ),
                         ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                        padding: const EdgeInsets.fromLTRB(32, 40, 32, 20),
                         child: Form(
                           key: _formKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
-                                    onPressed: () => Navigator.pop(context),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Expanded(
-                                    child: Text(
-                                      'Crea tu cuenta',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
                               Text(
-                                'Accede a tu panel con una cuenta segura y verificada.',
-                                style: TextStyle(color: Colors.white.withOpacity(0.75)),
+                                'Únete a nosotros',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 30),
                               AuthTextField(
                                 controller: _nameController,
-                                label: 'Nombre completo',
+                                label: 'Nombre Completo',
                                 prefixIcon: Icons.person_outline,
                                 textInputAction: TextInputAction.next,
                                 validator: (val) => val != null && val.isNotEmpty ? null : 'Requerido',
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               AuthTextField(
                                 controller: _emailController,
-                                label: 'Email',
+                                label: 'Correo Electrónico',
                                 prefixIcon: Icons.email_outlined,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: Validators.validateEmail,
                                 textInputAction: TextInputAction.next,
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               AuthTextField(
                                 controller: _passwordController,
                                 label: 'Contraseña',
@@ -159,40 +203,44 @@ class _RegisterPageState extends State<RegisterPage> {
                                 validator: Validators.validatePassword,
                                 onFieldSubmitted: (_) => _onRegisterPressed(),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 32),
                               AuthButton(
-                                text: 'Crear cuenta',
+                                text: 'REGISTRARSE',
                                 onPressed: _onRegisterPressed,
                                 isLoading: state is AuthLoading,
                               ),
-                              const SizedBox(height: 12),
+                              const Spacer(),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     '¿Ya tienes cuenta?',
-                                    style: TextStyle(color: Colors.white70),
+                                    style: TextStyle(color: Colors.white.withOpacity(0.6)),
                                   ),
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: Text(
-                                      'Inicia sesión',
-                                      style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+                                      'Inicia Sesión',
+                                      style: TextStyle(
+                                        color: _accentColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
